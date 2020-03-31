@@ -6,11 +6,11 @@ namespace Chat
 {
     public class Client
     {
-        public string UserName { get; set; }
+        public string UserName { get; }
 
-        public Client(string UserName)
+        public Client(string userName)
         {
-            this.UserName = UserName;
+            UserName = userName;
         }
 
     }

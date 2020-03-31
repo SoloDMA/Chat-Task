@@ -5,32 +5,21 @@ namespace Chat.Commands
     class CommandsForChat : CommandAndEventType
     {
         private readonly Regex GetMessagePattern = new Regex(@"^\S+");
-        public CommandTypes GetCommandType(string Message)
+        public CommandTypes GetCommandType(string message)
         {
-            
-            switch (GetMessagePattern.Match(Message).Value)
+            return GetMessagePattern.Match(message).Value switch
             {
-                case "start-chat":
-                    return CommandTypes.STARTCHAT;
-                case "signin":
-                    return CommandTypes.SIGNIN;
-                case "logout":
-                    return CommandTypes.LOGOUT;
-                case "add-mes":
-                    return CommandTypes.ADDMESSAGE;
-                case "del-mes":
-                    return CommandTypes.DELETEMESSAGE;
-                case "bot":
-                    return CommandTypes.BOT;
-                case "stop-chat":
-                    return CommandTypes.STOPCHAT;
-                case "help":
-                    return CommandTypes.HELP;
-                case "mes-hist":
-                    return CommandTypes.HISTORY;
-                default:
-                    return CommandTypes.ERROR;
-            }
+                "start-chat" => CommandTypes.START_CHAT,
+                "signin" => CommandTypes.SIGNIN,
+                "logout" => CommandTypes.LOGOUT,
+                "add-mes" => CommandTypes.ADD_MESSAGE,
+                "del-mes" => CommandTypes.DELETE_MESSAGE,
+                "bot" => CommandTypes.BOT,
+                "stop-chat" => CommandTypes.STOP_CHAT,
+                "help" => CommandTypes.HELP,
+                "mes-hist" => CommandTypes.HISTORY,
+                _ => CommandTypes.ERROR
+            };
         }
     }
 }

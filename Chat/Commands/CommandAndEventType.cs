@@ -4,17 +4,17 @@ using System.Text;
 
 namespace Chat.Commands
 {
-    class CommandAndEventType
+    public class CommandAndEventType
     {
         public enum CommandTypes
         {
-            STARTCHAT,
+            START_CHAT,
             SIGNIN,
             LOGOUT,
-            ADDMESSAGE,
-            DELETEMESSAGE,
+            ADD_MESSAGE,
+            DELETE_MESSAGE,
             BOT,
-            STOPCHAT,
+            STOP_CHAT,
             ERROR,
             HELP,
             HISTORY

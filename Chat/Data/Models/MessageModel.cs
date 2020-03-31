@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Chat.Models
+namespace Chat.Data.Models
 {
     class MessageModel
     {
