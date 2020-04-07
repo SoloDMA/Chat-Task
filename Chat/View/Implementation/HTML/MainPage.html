@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>HttpChat</title>
+    <style>
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #messages-view {
+            overflow-y: scroll;
+            position: absolute;
+            width: 50%;
+            height: 70%;
+            border: 1px solid black;
+            border-radius: 5px;
+            margin-left: calc(50% - 25%);
+        }
+
+        #message-form {
+            position: absolute;
+            width: 50%;
+            top: 85%;
+            margin-left: calc(50% - 25%);
+        }
+
+        #message-text {
+            border-radius: 5px;
+            width: 100%;
+            top: 100%;
+            resize: vertical;
+        }
+
+        .message {
+            margin: 10px 10px 10px 10px;
+            padding-bottom: 3px;
+            background-color: #c4c5ae75;
+        }
+
+        .user-name {
+            width: 150px;
+            color: #030892;
+            position: absolute;
+            font: bold 17px arial Roboto;
+        }
+
+        .message-text {
+            padding-top: 2px;
+            margin-left: 180px;
+            font: 300 15px arial Roboto;
+        }
+
+        .message-time {
+            width: 150px;
+            text-align: right;
+            margin-left: calc(100% - 155px);
+            color: #7b0404c7;
+        }
+
+        div > .delete-message-btn {
+            display: none;
+        }
+
+        div:hover > .delete-message-btn {
+            width: 70px;
+            font: bold 15px arial Roboto;
+            text-align: center;
+            display: block;
+            border: 1px solid black;
+            border-radius: 3px;
+            background-color: white;
+            margin: 10px 0px 0px calc(100% - 75px);
+        }
+
+        .delete-message-btn > a {
+            text-decoration: none;
+        }
+
+        #bots-info {
+            position: absolute;
+            width: 370px;
+            height: 350px;
+            border: 1px solid black;
+            border-radius: 5px;
+        }
+
+            #bots-info > p {
+                padding: 0 3px 0 3px;
+                font: 300 15px arial Roboto;
+            }
+
+        #logout-btn {
+            height: 50px;
+            width: 360px;
+            margin: 30px 3px 0 3px;
+            text-align: center;
+            text-decoration: none;
+            font: 300 25px arial Roboto;
+            border: 1px solid black;
+            border-radius: 3px;
+            background-color: antiquewhite
+        }
+
+            #logout-btn > a {
+                display: block;
+                height: 100%;
+                text-decoration: none;
+            }
+    </style>
+</head>
+<body>
+    <h1>Welcome to chat!</h1>
+    <div id="messages-view">
+        <div id="place-for-messages">
+            <!--Messages-->
+        </div>
+    </div>
+    <form id="message-form" enctype="text/plain" action="http://localhost:8080/postMessage/" method="post">
+        <textarea id="message-text" name="message" placeholder="Введите сообщение..." rows="3"></textarea>
+        <button type="submit">Отправить</button>
+    </form>
+    <div id="bots-info">
+        <p>В нашем чате есть боты. Чтобы обратиться к какому-либо боту используйте следующий формат сообщения:"@[имя_бота] /[команда_бота] [аргумент_команды (опционально)]"</p>
+        <p>Список ботов:</p>
+        <p>1. joke - присылает анекдот по команде /joke</p>
+        <p>2. time - присылает текущее время по команде /current</p>
+        <p>3. downloader - присылает содержимое тега title по команде /site (имеет аргумент команды - адрес сайта)</p>
+        <div id="logout-btn">
+            <a href="http://localhost:8080/logout/">Выйти из чата</a>
+        </div>
+    </div>
+</body>
+</html>

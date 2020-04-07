@@ -5,6 +5,7 @@ using Chat.Bots.Implementation;
 using Chat.Data.Implementation;
 using Chat.Server;
 using Chat.View.Implementation;
+using Chat.View.Implementation.HTML;
 
 namespace Chat
 {
@@ -16,7 +17,7 @@ namespace Chat
         static void Main(string[] args)
         {
             new ChatServerHttp(
-                new ChatConsoleView(),
+                new ChatHtmlView(),
                 new FileStorage(),
                 new Dictionary<string, BotConfig>
                 {
@@ -60,7 +61,7 @@ namespace Chat
                         }
                     }
                 }
-                );
+                ).StartServer();
         }
     }
 }

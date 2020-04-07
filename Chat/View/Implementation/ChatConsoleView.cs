@@ -21,5 +21,10 @@ namespace Chat.View.Implementation
 
 
         public void Clear() => Console.Clear();
+
+        public string ReadHtml(Pages pageType)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

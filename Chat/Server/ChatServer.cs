@@ -43,7 +43,7 @@ namespace Chat.Server
         private readonly Dictionary<string, Client> Clients;
         private CommandsForChat ChatCmd { get; set; }
 
-        private readonly IChatView View;
+        protected readonly IChatView View;
         private readonly IChatStorage ChatStorage;
 
         private readonly IDictionary<string, BotConfig> Bots;
@@ -52,7 +52,7 @@ namespace Chat.Server
         private const string BotCommandPatternBotCommandGroup = "botCommandName";
         private const string BotCommandPatternBotCommandArgumentGroup = "botCommandArgument";
 
-        private readonly Regex BotCommandPattern =
+        protected readonly Regex BotCommandPattern =
             new Regex($@"{BotNamePrefix}(?<{BotCommandPatternBotNameGroup}>\w+) \{BotCommandPrefix}(?<{BotCommandPatternBotCommandGroup}>\w+) ?(?<{BotCommandPatternBotCommandArgumentGroup}>.*)");
 
         private const string UserMessagePatternUserNameGroup = "userName";
@@ -88,13 +88,15 @@ namespace Chat.Server
             }
 
             ChatInfo = chatInfoBuilder.ToString();
+
+            ChatCmd = new CommandsForChat();
         }
 
         #endregion
 
         public virtual void StartServer()
         {
-            ChatCmd = new CommandsForChat();
+            
             WorkingServer();
         }
 
@@ -225,13 +227,13 @@ namespace Chat.Server
             if (!ChatStorage.AddAction($"Сall {botName} from {user.UserName}", out var error))
                 return error;
 
-            if (!this.Bots.TryGetValue(botName, out var botConfig))
+            if (!Bots.TryGetValue(botName, out var botConfig))
                 return $"Не нашли бота по имени {botName}";
 
             var botResultMessage = botConfig.Bot.ExecuteCommand(botCommand, botCommandArgument);
 
             if (!ChatStorage.AddMessage(
-                new MessageModel { UserName = botName, TextOfMessage = botResultMessage, TimeOfMessage = DateTime.Now },
+                new MessageModel {MessageID = (ChatStorage.LastMessageID++).ToString(), UserName = botName, TextOfMessage = botResultMessage, TimeOfMessage = DateTime.Now },
                 out error))
                 return error;
 
@@ -263,7 +265,7 @@ namespace Chat.Server
 
             if (!ChatStorage.AddMessage(
                 new MessageModel
-                { UserName = "@CHAT", TextOfMessage = $"Привет, {clientName}!", TimeOfMessage = DateTime.Now },
+                { MessageID = (ChatStorage.LastMessageID++).ToString(), UserName = "@CHAT", TextOfMessage = $"Привет, {clientName}!", TimeOfMessage = DateTime.Now },
                 out error))
                 return error;
 
@@ -275,7 +277,7 @@ namespace Chat.Server
                     continue;
 
                 if (!ChatStorage.AddMessage(
-                    new MessageModel { UserName = botName, TextOfMessage = botMessage, TimeOfMessage = DateTime.Now },
+                    new MessageModel { MessageID = (ChatStorage.LastMessageID++).ToString(), UserName = botName, TextOfMessage = botMessage, TimeOfMessage = DateTime.Now },
                     out error))
                     return error;
             }
@@ -292,7 +294,7 @@ namespace Chat.Server
 
             if (!ChatStorage.AddMessage(
                 new MessageModel
-                { UserName = "@CHAT", TextOfMessage = $"Пока, {client.UserName}!", TimeOfMessage = DateTime.Now },
+                { MessageID = (ChatStorage.LastMessageID++).ToString(), UserName = "@CHAT", TextOfMessage = $"Пока, {client.UserName}!", TimeOfMessage = DateTime.Now },
                 out error))
                 return error;
 
@@ -303,7 +305,7 @@ namespace Chat.Server
                     continue;
 
                 if (!ChatStorage.AddMessage(
-                    new MessageModel { UserName = botName, TextOfMessage = botMessage, TimeOfMessage = DateTime.Now },
+                    new MessageModel { MessageID = (ChatStorage.LastMessageID++).ToString(), UserName = botName, TextOfMessage = botMessage, TimeOfMessage = DateTime.Now },
                     out error))
                     return error;
             }
@@ -317,7 +319,7 @@ namespace Chat.Server
                 throw new ArgumentNullException(nameof(userMessage));
 
 
-            if (!ChatStorage.AddMessage(new MessageModel { UserName = user.UserName, TextOfMessage = userMessage, TimeOfMessage = DateTime.Now }, out error))
+            if (!ChatStorage.AddMessage(new MessageModel { MessageID = (ChatStorage.LastMessageID++).ToString(), UserName = user.UserName, TextOfMessage = userMessage, TimeOfMessage = DateTime.Now }, out error))
                 return false;
 
             foreach (var (botName, botConfig) in Bots)
@@ -334,7 +336,7 @@ namespace Chat.Server
                         continue;
 
                     if (!ChatStorage.AddMessage(new MessageModel
-                    { UserName = botName, TextOfMessage = botTriggerMessage, TimeOfMessage = DateTime.Now }, out error))
+                    { MessageID = (ChatStorage.LastMessageID++).ToString(), UserName = botName, TextOfMessage = botTriggerMessage, TimeOfMessage = DateTime.Now }, out error))
                         return false;
                 }
 

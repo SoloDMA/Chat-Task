@@ -13,6 +13,9 @@ namespace Chat.Bots.Implementation
         private readonly Regex TitleTagPattern = new Regex(@"<title.*?>((.*?)|(\s.*?))+</title>");
         private readonly Regex URLPattern = new Regex(@"(https?:\/\/)?([\w\.]+)\.([a-z]{2,6}\.?)(\/[\w\.]*)*\/?");
 
+        private readonly string TitleTagStart = "<title>";
+        private readonly string TitleTagEnd = "</title>";
+
         private readonly Dictionary<string, Command> Commands = new Dictionary<string, Command>
         {
             { "site", Command.SITE }
@@ -31,7 +34,9 @@ namespace Chat.Bots.Implementation
             {
                 case Command.SITE:
                     var htmlCode = DownloadWebPage(argument);
-                    return TitleTagPattern.Match(htmlCode).Value;
+                    var titleTag = TitleTagPattern.Match(htmlCode).Value;
+
+                    return titleTag.TrimStart(TitleTagStart.ToCharArray()).TrimEnd(TitleTagEnd.ToCharArray());
 
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -50,7 +55,7 @@ namespace Chat.Bots.Implementation
             return chatEvent switch
             {
                 CommandAndEventType.EventType.SIGNIN =>
-                "Привет. Напиши адрес сайта, и я покажу, что находится в его теге <title>?",
+                "Привет. Напиши адрес сайта, и я покажу, что находится в его теге \"title\"?",
                 CommandAndEventType.EventType.LOGOUT => $"Пока :)",
                 _ => ""
             };
@@ -67,7 +72,9 @@ namespace Chat.Bots.Implementation
 
             var htmlCode = DownloadWebPage(url);
 
-            return TitleTagPattern.Match(htmlCode).Value;
+            var titleTag = TitleTagPattern.Match(htmlCode).Value;
+
+            return titleTag.TrimStart(TitleTagStart.ToCharArray()).TrimEnd(TitleTagEnd.ToCharArray());
         }
 
         private enum Command

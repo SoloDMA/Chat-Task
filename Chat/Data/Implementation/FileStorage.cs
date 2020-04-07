@@ -37,6 +37,23 @@ namespace Chat.Data.Implementation
             }
         }
 
+        private static int lastMessageID;
+        public int LastMessageID
+        {
+            get
+            {
+                if (lastMessageID >= 1)
+                    return lastMessageID;
+
+                return 1;
+            }
+
+            set
+            {
+                lastMessageID = value;
+            }
+        }
+
         private const int BufferSize = 4096;
         private const int AmountBytesInMessageLen = 4;
 
@@ -116,6 +133,7 @@ namespace Chat.Data.Implementation
 
             var readState = States.R_USERNAME_LEN; //устанавливаем начальное состояние чтение
 
+            lastMessageID = 1;
 
             while (readBytes != 0)
             {
@@ -210,6 +228,7 @@ namespace Chat.Data.Implementation
 
                         messages.Add(new MessageModel
                         {
+                            MessageID = (lastMessageID++).ToString(),
                             UserName = userName,
                             TextOfMessage = textOfMessage,
                             TimeOfMessage = DateTime.FromBinary(dateInTicks)
@@ -300,7 +319,7 @@ namespace Chat.Data.Implementation
                 return false;
             }
 
-            if (messageId <= MessagesCache.Count)
+            if (messageId > MessagesCache.Count)
             {
                 error = "Введённый вами идентификатор, превышает количество сообщений, имеющихся в чате";
                 return false;
@@ -308,6 +327,17 @@ namespace Chat.Data.Implementation
 
             var deletedMessage = MessagesCache[messageId - 1];
             MessagesCache.Remove(deletedMessage);
+
+            foreach (var mes in MessagesCache) 
+            {
+                var oldId = int.Parse(mes.MessageID);
+                if (oldId > messageId)
+                {
+                    mes.MessageID = (oldId-1).ToString();
+                }
+            }
+
+            lastMessageID--;
 
             foreach (var mes in MessagesCache)
             {
