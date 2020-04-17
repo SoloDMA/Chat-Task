@@ -5,7 +5,6 @@ namespace Chat.Data.Contract
 {
     interface IChatStorage
     {
-        public int LastMessageID{ get; set; }
 
         /// <summary>
         ///     Возвращает список сообщений

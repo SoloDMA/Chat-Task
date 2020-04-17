@@ -17,7 +17,6 @@ namespace Chat.Commands
                 "bot" => CommandTypes.BOT,
                 "stop-chat" => CommandTypes.STOP_CHAT,
                 "help" => CommandTypes.HELP,
-                "mes-hist" => CommandTypes.HISTORY,
                 _ => CommandTypes.ERROR
             };
         }

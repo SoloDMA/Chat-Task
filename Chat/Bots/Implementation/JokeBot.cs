@@ -16,7 +16,7 @@ namespace Chat.Bots.Implementation
         {
         }
 
-        public string ExecuteCommand(string command, string argument = null)
+        public string ExecuteCommand(string command, string argument)
         {
             if (!Commands.TryGetValue(command, out var commandType))
                 return $"У меня нет команды {command}";

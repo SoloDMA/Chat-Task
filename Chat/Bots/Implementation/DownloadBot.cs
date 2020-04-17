@@ -25,7 +25,7 @@ namespace Chat.Bots.Implementation
         {
         }
 
-        public string ExecuteCommand(string command, string argument = null)
+        public string ExecuteCommand(string command, string argument)
         {
             if (!Commands.TryGetValue(command, out var commandType))
                 return $"У меня нет команды {command}";
@@ -55,7 +55,7 @@ namespace Chat.Bots.Implementation
             return chatEvent switch
             {
                 CommandAndEventType.EventType.SIGNIN =>
-                "Привет. Напиши адрес сайта, и я покажу, что находится в его теге \"title\"?",
+                "Привет. Напиши адрес сайта, и я покажу, что находится в его теге \"title\".",
                 CommandAndEventType.EventType.LOGOUT => $"Пока :)",
                 _ => ""
             };

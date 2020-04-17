@@ -1,6 +1,5 @@
 ﻿using Chat.Data.Contract;
 using Chat.Data.Models;
-using Chat.View;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -38,7 +37,7 @@ namespace Chat.Data.Implementation
         }
 
         private static int lastMessageID;
-        public int LastMessageID
+        private int LastMessageID
         {
             get
             {
@@ -116,7 +115,7 @@ namespace Chat.Data.Implementation
             var bufferPosition = 0; //текущая позиция в массиве messagesBuffer
             var needRead = true; //указывает нужно ли прочитать новую порцию данных из файла
 
-            var dateInTicks = 0l; //дата в тиках
+            var dateInTicks = 0L; //дата в тиках
 
             var leftToWriteInLenOfMessage =
                 AmountBytesInMessageLen; //сколько осталось записать байт в массив lenOfMessageTextBytes
@@ -290,6 +289,7 @@ namespace Chat.Data.Implementation
 
         public bool AddMessage(MessageModel message, out string error)
         {
+            message.MessageID = (LastMessageID++).ToString();
             MessagesCache.Add(message);
             return TryWriteMessage(message, MainMessagesFileName, FileMode.Append, out error);
         }
@@ -302,6 +302,15 @@ namespace Chat.Data.Implementation
         public bool AddAction(string action, out string error)
         {
             var recordableStringBytesArray = Encoding.UTF8.GetBytes(action);
+
+            if(action == null)
+            {
+                error = "Произошла непредвиденная ошибка. Попробуйте ещё раз.";
+                return false;
+            }
+
+            if (!File.Exists(ActionsFileName))
+                File.Create(ActionsFileName);
 
             using var fileStream = File.Open(ActionsFileName, FileMode.Append);
 
@@ -319,9 +328,9 @@ namespace Chat.Data.Implementation
                 return false;
             }
 
-            if (messageId > MessagesCache.Count)
+            if (messageId > MessagesCache.Count || messageId < 1)
             {
-                error = "Введённый вами идентификатор, превышает количество сообщений, имеющихся в чате";
+                error = "Введён некорректный идентификатор";
                 return false;
             }
 

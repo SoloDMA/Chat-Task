@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>HttpChat</title>
+    <style>
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #messages-view {
+            position: absolute;
+            width: 500px;
+            border: 1px solid black;
+            border-radius: 5px;
+            margin-left: calc(50% - 250px);
+        }
+
+
+        .message {
+            margin: 10px 10px 10px 10px;
+            padding-bottom: 3px;
+            background-color:#fd00008c;
+        }
+
+        .user-name {
+            width: 150px;
+            color: #030892;
+            position: absolute;
+            font: bold 17px arial Roboto;
+        }
+
+        .error-message-text {
+            padding-top: 2px;
+            margin-left: 180px;
+            font: 300 15px arial Roboto;
+            font-weight: bold;
+        }
+
+        .message-time {
+            width: 150px;
+            text-align: right;
+            margin-left: calc(100% - 155px);
+            color: #7b0404c7;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Произошла ошибка!</h1>
+    <div id="messages-view">
+        <div id="place-for-messages">
+            <!--Messages-->
+        </div>
+    </div>
+</body>
+</html>

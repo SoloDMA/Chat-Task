@@ -41,7 +41,7 @@ namespace Chat.Bots.Contract
         /// </param>
         /// <param name="argement">
         ///     Аргумент команды.
-        ///     По умолчанию этот параметр null, так как не у всех ботов команды содержат аргумент.
+        ///     Этот параметр может быть null, так как не у всех ботов команды содержат аргумент.
         /// </param>
         /// <returns>
         ///     Строка, содержащая результат выполнения команды.
@@ -52,6 +52,6 @@ namespace Chat.Bots.Contract
         /// <exception cref="ArgumentOutOfRangeException">
         ///     Есил произошла внутрення ошибка метода, связанная с определением типа команды бота
         /// </exception>
-        string ExecuteCommand(string command, string argement = null); 
+        string ExecuteCommand(string command, string argement); 
     }
 }

@@ -3,7 +3,8 @@ using System.Text.RegularExpressions;
 using Chat.Bots;
 using Chat.Bots.Implementation;
 using Chat.Data.Implementation;
-using Chat.Server;
+using Chat.Handlers;
+using Chat.View.Contract;
 using Chat.View.Implementation;
 using Chat.View.Implementation.HTML;
 
@@ -16,9 +17,8 @@ namespace Chat
 
         static void Main(string[] args)
         {
-            new ChatServerHttp(
-                new ChatHtmlView(),
-                new FileStorage(),
+            new ChatHtmlView(
+                new SqlStorage(),
                 new Dictionary<string, BotConfig>
                 {
                     {
@@ -61,7 +61,7 @@ namespace Chat
                         }
                     }
                 }
-                ).StartServer();
+                ).Start();
         }
     }
 }
