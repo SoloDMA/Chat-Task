@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Chat.Data.Contract;
 using Chat.Data.Models;
 using Chat.Handlers;
@@ -99,7 +101,14 @@ namespace Chat.View.Implementation.HTML
             while (true)
             {
                 var listenerContext = Listener.GetContext();
-                ContextProcessing(listenerContext);
+                //Thread.Sleep(1500);
+                //ContextProcessing(listenerContext);
+                new Thread(
+                    () =>
+                    {
+                        ContextProcessing(listenerContext);
+                    }
+                ).Start();
             }
         }
 

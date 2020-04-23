@@ -6,6 +6,7 @@ namespace Chat.Data.Contract
     interface IChatStorage
     {
 
+
         /// <summary>
         ///     Возвращает список сообщений
         /// </summary>

@@ -53,6 +53,7 @@ namespace Chat.Data.Implementation
             }
         }
 
+
         private const int BufferSize = 4096;
         private const int AmountBytesInMessageLen = 4;
 
@@ -289,6 +290,7 @@ namespace Chat.Data.Implementation
 
         public bool AddMessage(MessageModel message, out string error)
         {
+            
             message.MessageID = (LastMessageID++).ToString();
             MessagesCache.Add(message);
             return TryWriteMessage(message, MainMessagesFileName, FileMode.Append, out error);

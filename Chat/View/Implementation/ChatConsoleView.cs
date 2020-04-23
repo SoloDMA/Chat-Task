@@ -4,13 +4,17 @@ using Chat.Data.Models;
 using Chat.Handlers;
 using Chat.View.Contract;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Chat.View.Implementation
 {
     class ChatConsoleView : IChatView
     {
+
         private readonly ChatHandler ChatHandlers;
         private readonly CommandsForChat ChatCmd;
         private readonly Dictionary<string, ClientModel> OnlineClients;
@@ -68,6 +72,7 @@ namespace Chat.View.Implementation
         private void MessageProcessing(string message)
         {
             string error = null;
+
             switch (ChatCmd.GetCommandType(message))
             {
                 case CommandAndEventType.CommandTypes.START_CHAT:
@@ -77,7 +82,7 @@ namespace Chat.View.Implementation
                 case CommandAndEventType.CommandTypes.SIGNIN:
                     var clientName = GetClientName(message);
                     var newClientObject = ChatHandlers.SignInChat(clientName, out error);
-                    if(newClientObject != null)
+                    if (newClientObject != null)
                         OnlineClients.Add(clientName, newClientObject);
                     break;
                 case CommandAndEventType.CommandTypes.LOGOUT:
@@ -107,21 +112,25 @@ namespace Chat.View.Implementation
                     error = "Введена неверная команда";
                     break;
             }
-
-            if(error != null)
+            new Thread((object botThread) =>
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Render(error);
-                Console.ResetColor();
-            }
-            else
-            {
-                var messages = ChatHandlers.GetMessages();
-                foreach (var messageText in messages)
+                if (error != null)
                 {
-                    Render(string.Format(MessageFormat, messageText.UserName, messageText.TextOfMessage, messageText.TimeOfMessage));
-                }    
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Render(error);
+                    Console.ResetColor();
+                }
+                else
+                {
+                    while (ChatHandlers.BotThread != null && ChatHandlers.BotThread.IsAlive) { }
+                    foreach (var messageText in ChatHandlers.GetMessages())
+                    {
+                        Render(string.Format(MessageFormat, messageText.UserName, messageText.TextOfMessage, messageText.TimeOfMessage));
+                    }
+
+                }
             }
+            ).Start();
         }
 
         public void Render(string text)

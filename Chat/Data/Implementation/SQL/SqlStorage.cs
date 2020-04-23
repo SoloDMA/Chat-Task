@@ -10,6 +10,8 @@ namespace Chat.Data.Implementation
 {
     class SqlStorage : IChatStorage
     {
+        private object lockObj = new object();
+
         private SqlConnection SqlConnection;
 
         private const string ConnectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=D:\.Net\Chat — новая архитектура\Chat\Data\Implementation\SQL\ChatDB.mdf;Integrated Security=True";
@@ -83,24 +85,28 @@ namespace Chat.Data.Implementation
 
         public bool AddAction(string action, out string error)
         {
-            SqlConnection.Open();
+            lock (lockObj)
+            {
+                SqlConnection.Open();
 
-            var sqlCommand = new SqlCommand("INSERT INTO [Actions] (ActionDescription, ActionTime) VALUES(@ActionDescription, @ActionTime)",
-                SqlConnection);
+                var sqlCommand = new SqlCommand("INSERT INTO [Actions] (ActionDescription, ActionTime) VALUES(@ActionDescription, @ActionTime)",
+                    SqlConnection);
 
-            sqlCommand.Parameters.AddWithValue("ActionDescription", action);
-            sqlCommand.Parameters.AddWithValue("ActionTime", DateTime.Now);
+                sqlCommand.Parameters.AddWithValue("ActionDescription", action);
+                sqlCommand.Parameters.AddWithValue("ActionTime", DateTime.Now);
 
-            sqlCommand.ExecuteNonQuery();
+                sqlCommand.ExecuteNonQuery();
 
-            SqlConnection.Close();
+                SqlConnection.Close();
 
-            error = null;
-            return true;
+                error = null;
+                return true;
+            }
         }
 
         public bool AddMessage(MessageModel messageModel, out string error)
         {
+
 
             if (messageModel.TextOfMessage == null || string.IsNullOrWhiteSpace(messageModel.TextOfMessage))
             {
@@ -108,35 +114,41 @@ namespace Chat.Data.Implementation
                 return false;
             }
 
+            lock (lockObj)
+            {
 
-            messageModel.MessageID = CurrentOrderNumber.ToString();
-            var MessageIdInDB = Guid.NewGuid().ToString();
-            OrderNumber_MessageSqlID.Add(CurrentOrderNumber++, MessageIdInDB);
+                messageModel.MessageID = CurrentOrderNumber.ToString();
+                var MessageIdInDB = Guid.NewGuid().ToString();
+                OrderNumber_MessageSqlID.Add(CurrentOrderNumber++, MessageIdInDB);
 
-            MessagesCache.Add(messageModel);
 
-            SqlConnection.Open();
-            var sqlCommand = new SqlCommand("INSERT INTO [Messages] (Id,Username, TextOfMessage, TimeOfMessage) " +
-                                            "VALUES(@Id ,@Username, @TextOfMessage, @TimeOfMessage)", 
-                SqlConnection);
+                MessagesCache.Add(messageModel);
 
-            sqlCommand.Parameters.AddWithValue("Id", MessageIdInDB);
-            sqlCommand.Parameters.AddWithValue("Username", messageModel.UserName);
-            sqlCommand.Parameters.AddWithValue("TextOfMessage", messageModel.TextOfMessage);
-            sqlCommand.Parameters.AddWithValue("TimeOfMessage", messageModel.TimeOfMessage.ToString("dd.MM.yyyy HH:mm:ss.ffff"));
-            sqlCommand.ExecuteNonQuery();
-            SqlConnection.Close();
+                SqlConnection.Open();
+                var sqlCommand = new SqlCommand("INSERT INTO [Messages] (Id,Username, TextOfMessage, TimeOfMessage) " +
+                                                "VALUES(@Id ,@Username, @TextOfMessage, @TimeOfMessage)",
+                    SqlConnection);
 
-            error = null;
-            return true;
+                sqlCommand.Parameters.AddWithValue("Id", MessageIdInDB);
+                sqlCommand.Parameters.AddWithValue("Username", messageModel.UserName);
+                sqlCommand.Parameters.AddWithValue("TextOfMessage", messageModel.TextOfMessage);
+                sqlCommand.Parameters.AddWithValue("TimeOfMessage", messageModel.TimeOfMessage.ToString("dd.MM.yyyy HH:mm:ss.ffff"));
+                sqlCommand.ExecuteNonQuery();
+                SqlConnection.Close();
+
+                error = null;
+                return true;
+            }
+
         }
 
         public List<MessageModel> GetAllMessages()
         {
-            return MessagesCache;
+            lock (lockObj)
+                return MessagesCache;
         }
 
-        
+
 
         public bool TryDeleteMessage(in int Id, out string error)
         {
@@ -153,46 +165,50 @@ namespace Chat.Data.Implementation
             }
 
             var deletedMessage = MessagesCache[Id - 1];
-            MessagesCache.Remove(deletedMessage);
-
-            SqlConnection.Open();
-
-            var MessageIdInDB = OrderNumber_MessageSqlID[Id];
-            OrderNumber_MessageSqlID.Remove(Id);
-
-            var sqlCommand = new SqlCommand("DELETE FROM [Messages] WHERE [Id]=@Id", SqlConnection);
-
-            sqlCommand.Parameters.AddWithValue("Id", MessageIdInDB);
-            sqlCommand.ExecuteNonQuery();
-
-            SqlConnection.Close();
-
-            foreach (var mes in MessagesCache)
+            lock (lockObj)
             {
-                var oldId = int.Parse(mes.MessageID);
-                if (oldId > Id)
+
+                MessagesCache.Remove(deletedMessage);
+
+                SqlConnection.Open();
+
+                var MessageIdInDB = OrderNumber_MessageSqlID[Id];
+                OrderNumber_MessageSqlID.Remove(Id);
+
+                var sqlCommand = new SqlCommand("DELETE FROM [Messages] WHERE [Id]=@Id", SqlConnection);
+
+                sqlCommand.Parameters.AddWithValue("Id", MessageIdInDB);
+                sqlCommand.ExecuteNonQuery();
+
+                SqlConnection.Close();
+
+                foreach (var mes in MessagesCache)
                 {
-                    mes.MessageID = (oldId - 1).ToString();
+                    var oldId = int.Parse(mes.MessageID);
+                    if (oldId > Id)
+                    {
+                        mes.MessageID = (oldId - 1).ToString();
+                    }
                 }
-            }
 
-            var newDict = new Dictionary<int, string>();
-            foreach(var (key, value) in OrderNumber_MessageSqlID)
-            {
-                var newKey = key;
-                if (newKey > Id)
+                var newDict = new Dictionary<int, string>();
+                foreach (var (key, value) in OrderNumber_MessageSqlID)
                 {
-                    newKey--;
+                    var newKey = key;
+                    if (newKey > Id)
+                    {
+                        newKey--;
+                    }
+                    newDict.Add(newKey, value);
                 }
-                newDict.Add(newKey, value);
+
+                OrderNumber_MessageSqlID = newDict;
+
+                currenOrderNumber--;
+
+                error = null;
+                return true;
             }
-
-            OrderNumber_MessageSqlID = newDict;
-
-            currenOrderNumber--;
-
-            error = null;
-            return true;
         }
     }
 }

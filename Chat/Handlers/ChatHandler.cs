@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Chat.Handlers
 {
@@ -19,9 +21,11 @@ namespace Chat.Handlers
 
     class ChatHandler
     {
+        public Thread BotThread { get; private set; }
 
         private readonly IChatStorage ChatStorage;
         private readonly IDictionary<string, BotConfig> Bots;
+
 
         public ChatHandler(IChatStorage storage, IDictionary<string, BotConfig> bots)
         {
@@ -45,7 +49,7 @@ namespace Chat.Handlers
             {
                 return null;
             }
-                
+
 
             if (!ChatStorage.AddMessage(
                 new MessageModel
@@ -89,8 +93,8 @@ namespace Chat.Handlers
                     continue;
 
                 if (!ChatStorage.AddMessage(
-                    new MessageModel 
-                    {  UserName = botName, TextOfMessage = botMessage, TimeOfMessage = DateTime.Now },
+                    new MessageModel
+                    { UserName = botName, TextOfMessage = botMessage, TimeOfMessage = DateTime.Now },
                     out error))
                     return;
             }
@@ -108,32 +112,41 @@ namespace Chat.Handlers
 
 
             if (!ChatStorage.AddMessage(
-                new MessageModel 
-                { UserName = user.UserName, TextOfMessage = userMessage, TimeOfMessage = DateTime.Now }, 
+                new MessageModel
+                { UserName = user.UserName, TextOfMessage = userMessage, TimeOfMessage = DateTime.Now },
                 out error))
                 return;
 
-            foreach (var (botName, botConfig) in Bots)
+
+            BotThread = new Thread((object error) =>
             {
-
-                foreach (var botTrigger in botConfig.Triggers)
+                string _error = string.Empty;
+                foreach (var (botName, botConfig) in Bots)
                 {
-                    if (!botTrigger.IsMatch(userMessage))
-                        continue;
 
-                    var botTriggerMessage = botConfig.Bot.ReactionOnMessage(userMessage);
+                    foreach (var botTrigger in botConfig.Triggers)
+                    {
+                        if (!botTrigger.IsMatch(userMessage))
+                            continue;
 
-                    if (string.IsNullOrWhiteSpace(botTriggerMessage))
-                        continue;
+                        var botTriggerMessage = botConfig.Bot.ReactionOnMessage(userMessage);
 
-                    if (!ChatStorage.AddMessage(
+                        if (string.IsNullOrWhiteSpace(botTriggerMessage))
+                            continue;
+
+                        if (!ChatStorage.AddMessage(
                         new MessageModel
-                        { UserName = botName, TextOfMessage = botTriggerMessage, TimeOfMessage = DateTime.Now }, 
-                        out error))
-                        return;
-                }
+                        { UserName = botName, TextOfMessage = botTriggerMessage, TimeOfMessage = DateTime.Now },
+                        out _error))
+                            return;
 
-            }
+                    }
+
+                }
+                error = _error;
+
+            });
+            BotThread.Start(error);
 
             error = null;
         }
@@ -164,11 +177,11 @@ namespace Chat.Handlers
                 error = $"Не нашли бота по имени {botName}";
                 return;
             }
-            
+
             var botResultMessage = botConfig.Bot.ExecuteCommand(botCommand, botCommandArgument);
 
             if (!ChatStorage.AddMessage(
-                new MessageModel {  UserName = botName, TextOfMessage = botResultMessage, TimeOfMessage = DateTime.Now },
+                new MessageModel { UserName = botName, TextOfMessage = botResultMessage, TimeOfMessage = DateTime.Now },
                 out error))
                 return;
 
@@ -179,5 +192,6 @@ namespace Chat.Handlers
         {
             return ChatStorage.GetAllMessages();
         }
+
     }
 }
